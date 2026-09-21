@@ -1,0 +1,407 @@
+/* E-ink appliance theme. Reachable at /?theme=eink
+
+   Light for the playing screen, black for the clock. There was briefly a
+   full dark variant in eink-dark.css; it lost, and its palette lives on in
+   the clock rules at the bottom of this file.
+
+   Drawn for a viewing distance of about 1 metre, on a 165ppi panel sitting
+   below a monitor. That single fact drives every decision here, and it is
+   the opposite of the constraint the first version was drawn under. At arm's
+   length the old sheet was a dense little appliance screen; at a metre it was
+   illegible. Type roughly doubled, and the content that could not be read at
+   the new size was removed rather than shrunk to fit.
+
+   What was cut, and why:
+   - NOW PLAYING header and every other tiny uppercase micro-label. Decorative
+     at any distance, and 9px letterspaced caps are the worst-rendering thing
+     you can put on a low-DPI panel.
+   - The album name line. Least valuable field, and unreadable at a size that
+     would fit.
+   - The PLAYING / PAUSED badge. The play button already carries that state by
+     inverting, so the word was a second, smaller copy of the same fact.
+   - The paper grain tile. At a metre it does not read as texture, it reads as
+     reduced contrast.
+
+   The lyric line was cut in that same pass and then put back, under the
+   artist, at 20px. It is the one thing on screen that changes while a track
+   plays, so it earns the space the album name did not. Landscape only.
+
+   Rendering rules that follow from the panel:
+   - No negative letter-spacing anywhere. Tightening 34px bold type at 165ppi
+     greys the stems.
+   - Dividers are 2px. A 1px rule at a metre is a suggestion.
+   - The dithered cover is 176x176 and must match art.DITHER_PX exactly. It is
+     never scaled by the browser — that would average the black and white
+     pixels into the grey mush the dither exists to avoid.
+
+   Layout is orientation-scoped: app.js measures innerWidth against
+   innerHeight and sets is-landscape or is-portrait. Landscape (480x320) is
+   the real one. Portrait is the fallback and drops the waveform as well,
+   because at this type size it does not fit.
+
+   No @font-face: nothing suitable is bundled and a webfont is a real cost on
+   a 512MB single-core device. Droid Sans is the Gingerbread system font. */
+
+body {
+  background: #f3f3ee;
+  color: #000000;
+}
+
+/* Colour, in a theme that has none. Inline styles from app.js need
+   !important to override — the documented pattern. */
+#backdrop { display: none !important; }
+#scrim { display: none; }
+
+/* --- cut from this theme ------------------------------------------------ */
+
+#header,
+#album-name,
+#badge,
+#idle-note { display: none; }
+
+/* The lyric line is back, under the artist, landscape only — see the
+   .is-landscape block. Portrait has no room for it at this type size. */
+
+/* --- type --------------------------------------------------------------- */
+
+#title {
+  font-weight: bold;
+  letter-spacing: 0;
+  color: #000000;
+  white-space: normal;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+
+/* Bold as well as large. Regular weight at this size and distance turns into
+   a grey smear on this panel. */
+#artist {
+  font-weight: bold;
+  letter-spacing: 0;
+  color: #000000;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Fixed height, not auto: the rule underneath must not move when a title
+   wraps to a second line. A layout that shifts on every skip reads as broken
+   on a device this slow. */
+#meta { border-bottom: 2px solid #b8b8ae; }
+
+/* --- cover -------------------------------------------------------------- */
+
+#cover-frame {
+  width: 176px; height: 176px;
+  border: 2px solid #000000;
+  -webkit-border-radius: 8px;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+#cover { display: none; }
+
+#cover-dither {
+  display: block;
+  width: 176px;
+  height: 176px;
+  border: 0;
+}
+
+/* --- waveform ----------------------------------------------------------- */
+
+/* app.js fills this from the container's size: bar count is width / pitch,
+   heights scale to the height. Pitch is 14 in app.js — fewer, fatter bars,
+   because 32 six-pixel bars at a metre are visual noise rather than a shape. */
+#waveform {
+  display: block;
+  position: absolute;
+}
+
+.wave-bar {
+  position: absolute;
+  width: 10px;
+  background: #c2c2b8;
+}
+
+.wave-bar.on { background: #000000; }
+
+/* --- playback ----------------------------------------------------------- */
+
+#track {
+  width: 100%;
+  height: 3px;
+  background: #c2c2b8;
+}
+
+#fill {
+  height: 3px;
+  background: #000000 !important;   /* beats the album accent app.js writes */
+}
+
+#elapsed, #duration {
+  font-size: 17px;
+  line-height: 21px;
+  letter-spacing: 0;
+  color: #3a3a34;
+}
+
+/* Not a micro-label: this is the only thing that explains a dark screen at
+   3am, so it is sized to be readable rather than deleted. */
+#offline {
+  top: 16px; right: 32px;
+  font-size: 16px;
+  line-height: 20px;
+  letter-spacing: 0;
+  text-transform: none;
+  color: #6b6b62;
+}
+
+/* --- transport ---------------------------------------------------------- */
+
+/* Right-aligned, never centred: with no previous button, a centred pair reads
+   as a three-button transport with one missing. */
+#controls {
+  display: block;
+  position: absolute;
+}
+
+/* The phone lives in a case, so the targets stay large and clear of both
+   edges. 52 content + 2 border = 54 rendered. */
+.btn {
+  position: absolute;
+  top: 0;
+  width: 52px;
+  height: 52px;
+  border: 2px solid #000000;
+  -webkit-border-radius: 6px;
+  border-radius: 6px;
+  /* The global rule kills the tap flash, so the press state is drawn here.
+     app.js attaches empty touchstart handlers to make :active fire at all. */
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0.12);
+}
+
+#btn-play { left: 0; }
+#btn-next { left: 68px; }          /* 56 rendered + 12px gap */
+
+.btn:active { background: #e2e2d9; }
+
+/* No colour to signal playback state with, so the button inverts: filled
+   while playing, outline while paused. This is what replaced the badge. */
+#btn-play.playing { background: #000000; }
+#btn-play.playing:active { background: #333330; }
+
+#btn-play .glyph {
+  position: absolute;
+  left: 19px; top: 15px;
+  width: 0; height: 0;
+  border-left: 17px solid #000000;
+  border-top: 10px solid transparent;
+  border-bottom: 10px solid transparent;
+}
+
+#btn-play.playing .glyph {
+  left: 17px; top: 15px;
+  width: 5px; height: 20px;        /* 5 + 5 + 5 = 15 wide */
+  border-left: 5px solid #f3f3ee;
+  border-right: 5px solid #f3f3ee;
+  border-top: 0;
+  border-bottom: 0;
+}
+
+#btn-next .glyph {
+  position: absolute;
+  left: 15px; top: 17px;
+  width: 0; height: 0;
+  border-left: 14px solid #000000;
+  border-top: 8px solid transparent;
+  border-bottom: 8px solid transparent;
+}
+
+#btn-next .bar {
+  position: absolute;
+  left: 30px; top: 17px;
+  width: 4px; height: 16px;
+  background: #000000;
+}
+
+.is-idle #controls { display: none; }
+
+/* --- landscape: 480 x 320, the real one --------------------------------- */
+
+/* Budget, top to bottom: cover 18..196 on the left; title and artist in the
+   right column 40..158; waveform 218..248; progress 256..296; transport
+   248..302. Left margin 20, right margin 32.
+
+   The right column is 244px wide, which is about 14 characters of 34px bold
+   per line. Longer titles ellipsis after two lines. That is the trade the
+   size demands and it is the correct one. */
+
+.is-landscape #cover-frame { left: 20px; top: 18px; }
+
+.is-landscape #meta {
+  left: 216px; top: 40px;
+  width: 244px;
+  height: 118px;
+}
+
+.is-landscape #title {
+  font-size: 34px;
+  line-height: 38px;
+  height: 76px;                    /* exactly two lines */
+}
+
+.is-landscape #artist {
+  font-size: 23px;
+  line-height: 27px;
+  margin-top: 10px;
+}
+
+/* Under the artist, below the rule. Two lines at 20px in a 244px column is
+   about 30 characters — enough for most lyric lines, clipped past that. The
+   box is a fixed height so an empty or short line cannot move anything, and
+   it stops 5px above the waveform. */
+.is-landscape #lyric {
+  display: block;
+  left: 216px; top: 164px;
+  width: 244px;
+  height: 48px;
+  font-size: 20px;
+  line-height: 24px;
+  letter-spacing: 0;
+  color: #3a3a34;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+
+.is-landscape #waveform {
+  left: 20px; bottom: 72px;
+  width: 280px;
+  height: 30px;
+}
+
+.is-landscape #progress {
+  left: 20px; bottom: 24px;
+  width: 280px;
+  height: 40px;
+}
+
+.is-landscape #elapsed, .is-landscape #duration { top: 14px; }
+
+/* 32px from the right edge, 18px from the bottom: in a case both edges are
+   hard to reach. Block is 56 + 12 + 56 = 124 wide. */
+.is-landscape #controls {
+  left: 324px; bottom: 18px;
+  width: 124px; height: 56px;
+}
+
+/* --- portrait: the fallback --------------------------------------------- */
+
+/* Needs 420px of usable height. The waveform goes entirely: at this type size
+   there is no row left for it, and it is the only purely decorative element
+   on the screen. */
+
+/* 176 + 2px border each side = 180 rendered; (320 - 180) / 2 = 70. */
+.is-portrait #cover-frame { left: 70px; top: 16px; }
+
+.is-portrait #meta {
+  left: 20px; top: 210px;
+  width: 280px;
+  height: 118px;
+}
+
+.is-portrait #title {
+  font-size: 34px;
+  line-height: 38px;
+  height: 76px;
+}
+
+.is-portrait #artist {
+  font-size: 23px;
+  line-height: 27px;
+  margin-top: 10px;
+}
+
+/* No room for either at this type size: the metadata rule and the transport
+   are already only a dozen pixels apart. */
+.is-portrait #waveform { display: none; }
+.is-portrait #lyric { display: none; }
+
+.is-portrait #progress {
+  left: 20px; bottom: 30px;
+  width: 132px;
+  height: 40px;
+}
+
+.is-portrait #elapsed, .is-portrait #duration { top: 14px; }
+
+.is-portrait #controls {
+  left: 164px; bottom: 24px;
+  width: 124px; height: 56px;
+}
+
+/* --- the clock screen --------------------------------------------------- */
+
+/* Two states show a clock and nothing else, and both are now black on light
+   ink — the inverse of the playing screen:
+
+     .is-idle   Spotify reports nothing playing.
+     .is-dead   app.js has failed five polls; the laptop is asleep or gone.
+
+   Black because this is the state the display sits in overnight, and a lit
+   white rectangle in a dark room is the one thing a desk appliance must not
+   be. Flat, no texture: an unlit panel has none. Both revert by themselves —
+   is-dead on the first successful poll, is-idle on the first track. */
+
+.is-idle,
+.is-dead {
+  background: #000000;
+}
+
+#clock {
+  font-size: 84px;
+  line-height: 88px;
+  font-weight: bold;
+  letter-spacing: 0;
+  color: #000000;                  /* overridden below whenever it is shown */
+}
+
+.is-idle #clock,
+.is-dead #clock { color: #f3f3ee; }
+
+.is-idle #offline,
+.is-dead #offline { color: #55554e; }
+
+/* Two classes on #lyric, so this beats `.is-landscape #lyric` regardless of
+   source order — otherwise the last line of the last track sits behind the
+   clock all night. */
+.is-idle #header,
+.is-idle #waveform { display: none; }
+
+.is-idle.is-landscape #lyric,
+.is-idle.is-portrait #lyric { display: none; }
+
+/* --- debug -------------------------------------------------------------- */
+
+/* /?theme=eink&debug=1 prints the measured viewport. The header it normally
+   lives in is gone from this theme, so it is reinstated only in debug. */
+.is-debug #header {
+  display: block;
+  position: absolute;
+  left: 20px; top: 4px;
+  width: 440px; height: 20px;
+  border: 0;
+}
+
+.is-debug #now-label {
+  position: absolute;
+  left: 0; top: 0;
+  font-size: 14px;
+  letter-spacing: 0;
+  text-transform: none;
+  color: #6b6b62;
+}

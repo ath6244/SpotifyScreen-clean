@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<!-- target-densitydpi is deprecated everywhere modern and essential here:
+     without it Gingerbread reports a 320px screen as ~533 CSS px. -->
+<!-- width=device-width, not a hardcoded 320: pinned to 320 the browser scales
+     the whole page 1.5x in landscape to fill 480. No height= either — pinning
+     it makes window.innerHeight report that number whatever the chrome
+     actually leaves. target-densitydpi is deprecated everywhere modern and
+     essential here: without it Gingerbread reports this screen as ~533 CSS px. -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, target-densitydpi=device-dpi">
+<title>Now Playing</title>
+<link rel="stylesheet" href="style.css">
+<!-- Theme sheet is swapped by app.js from the ?theme= query parameter.
+     Backend never knows which theme is active. -->
+<link rel="stylesheet" href="themes/amoled.css" id="theme">
+</head>
+<body>
+
+<div id="backdrop"></div>
+<div id="scrim"></div>
+
+<div id="screen">
+
+  <!-- Elements below that no other theme uses (#header, #album-name,
+       #waveform, #cover-dither) are hidden by default in style.css and
+       switched on by the theme that wants them. -->
+  <div id="header">
+    <div id="now-label">Now Playing</div>
+    <div id="status-time">--:--</div>
+  </div>
+
+  <div id="cover-frame">
+    <img id="cover" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="">
+    <img id="cover-dither" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="">
+    <img id="cover-dither-dim" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt="">
+  </div>
+
+  <div id="meta">
+    <div id="title">&nbsp;</div>
+    <div id="artist">&nbsp;</div>
+    <div id="album-name"></div>
+  </div>
+
+  <div id="lyric"></div>
+
+  <!-- Bars are written by app.js on each track change. -->
+  <div id="waveform"></div>
+
+  <div id="progress">
+    <div id="track"><div id="fill"></div></div>
+    <div id="elapsed">0:00</div>
+    <div id="duration">0:00</div>
+  </div>
+
+  <!-- Glyphs are CSS shapes, not icons: no SVG on this engine, and a bitmap
+       would need a second file per state. The inner divs are the shapes. -->
+  <div id="controls">
+    <div id="btn-play" class="btn"><div class="glyph"></div></div>
+    <div id="btn-next" class="btn"><div class="glyph"></div><div class="bar"></div></div>
+  </div>
+
+  <div id="badge"></div>
+
+  <div id="idle">
+    <div id="clock">--:--</div>
+    <div id="idle-note">Nothing playing</div>
+  </div>
+
+  <div id="offline">Reconnecting</div>
+
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>

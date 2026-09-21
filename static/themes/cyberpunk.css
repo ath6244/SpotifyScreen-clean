@@ -1,0 +1,35 @@
+/* Cyberpunk — fixed palette. Demonstrates a theme that refuses the
+   album-derived accent: every inline style app.js writes is overridden. */
+
+body {
+  background: #07030f;
+  color: #f2e9ff;
+}
+
+#backdrop { display: none !important; }
+#scrim { background: #07030f; }
+
+#cover-frame {
+  border: 1px solid #ff2d95;
+  left: 29px; top: 41px;
+}
+
+#title {
+  color: #00f0ff;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-size: 17px;
+}
+
+#artist { color: #ff2d95; }
+#lyric { color: #9d7fd4; }
+
+#track { background: #1b0a2e; }
+#fill { background: #00f0ff !important; }
+
+#elapsed, #duration { color: #6b4b9a; }
+#badge { color: #ff2d95 !important; }
+#offline { color: #ff2d95; }
+
+#clock { color: #00f0ff; }
+#idle-note { color: #ff2d95; }

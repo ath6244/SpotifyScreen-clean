@@ -1,0 +1,32 @@
+/* Minimal AMOLED — true black, one accent borrowed from the cover.
+
+   How theming works: app.js writes the album-derived accent onto #fill and
+   #badge, and the blurred cover onto #backdrop, as inline styles. A theme
+   that wants a fixed palette overrides those with !important (see
+   cyberpunk.css). No JS or backend changes are ever needed. */
+
+body {
+  background: #000000;
+  color: #ffffff;
+}
+
+/* AMOLED means pixels that are off. Discard the backdrop entirely. */
+#backdrop { display: none; }
+#scrim { background: #000000; }
+
+#cover-frame {
+  -webkit-border-radius: 2px;
+  border-radius: 2px;
+}
+
+#title { color: #ffffff; }
+#artist { color: #8a8a8a; }
+#lyric { color: #b4b4b4; }
+
+#track { background: #1c1c1c; }
+#elapsed, #duration { color: #6e6e6e; }
+#badge { color: #6e6e6e; }
+#offline { color: #4a4a4a; }
+
+#clock { color: #ffffff; }
+#idle-note { color: #5a5a5a; }

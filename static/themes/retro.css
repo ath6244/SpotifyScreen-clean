@@ -1,0 +1,39 @@
+/* Retro cassette — warm paper, and the one theme that actually uses the
+   server-blurred backdrop. Note there is no rgba() scrim: layering a
+   translucent div over a background image is a visible scroll-jank source
+   on Gingerbread, so the dimming is baked into the JPEG instead. */
+
+body {
+  background: #efe6d2;
+  color: #2b2016;
+}
+
+#scrim { display: none; }
+
+#cover-frame {
+  left: 26px; top: 38px;
+  width: 268px; height: 268px;
+  border: 6px solid #f7f1e2;
+  -webkit-box-shadow: 0 1px 3px #b9ac91;
+  box-shadow: 0 1px 3px #b9ac91;
+}
+
+#cover { width: 268px; height: 268px; }
+
+#title {
+  color: #2b2016;
+  font-size: 18px;
+}
+
+#artist { color: #7a6a52; }
+#lyric { color: #5c4c38; }
+
+#track { background: #d3c6ab; height: 4px; }
+#fill { height: 4px; }
+
+#elapsed, #duration { color: #8a795f; }
+#badge { color: #8a795f; }
+#offline { color: #a8987c; }
+
+#clock { color: #2b2016; }
+#idle-note { color: #8a795f; }

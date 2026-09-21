@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, target-densitydpi=device-dpi">
+<title>Diagnostics</title>
+</head>
+<body style="background:#fff;color:#000;font-family:sans-serif;font-size:13px;margin:0;padding:8px">
+
+<!-- Layer probe. Nothing here depends on app.js, style.css or any theme, and
+     every line is ES3 — no JSON, no addEventListener, no trim, until each is
+     individually tested below. Open this on the phone at /diag.html.
+
+     Read it top down: the last line you can see is the layer that works, and
+     the first missing one is where it breaks. -->
+
+<div style="font-weight:bold;font-size:15px">1 HTML OK</div>
+<div style="margin-top:4px">If you can read this, the phone reached the
+laptop, the server answered, and the browser rendered HTML. Any failure is
+above this line: Wi-Fi, IP address, port, or firewall.</div>
+
+<div id="css-probe" style="margin-top:8px;padding:4px;border:1px solid #000;background:#eee">
+2 CSS OK &mdash; this box has a border and a grey fill.</div>
+
+<div style="margin-top:8px"><b>3 JS:</b> <span id="js">NOT RUNNING</span></div>
+<div><b>4 Screen:</b> <span id="size">-</span></div>
+<div><b>5 Features:</b> <span id="feat">-</span></div>
+<div><b>6 XHR:</b> <span id="xhr">not started</span></div>
+<div><b>7 JSON:</b> <span id="json">-</span></div>
+<div><b>8 Dither PNG:</b> <span id="png">-</span></div>
+<div style="margin-top:8px;word-wrap:break-word"><b>9 UA:</b>
+<span id="ua">-</span></div>
+
+<script type="text/javascript">
+/* ES3 only. var, function, no closures over let, no array extras. */
+function put(id, text) {
+  var node = document.getElementById(id);
+  if (node) { node.innerHTML = text; }
+}
+
+put("js", "RUNNING");
+put("size", "innerWidth=" + window.innerWidth + " innerHeight=" + window.innerHeight +
+            " screen=" + screen.width + "x" + screen.height);
+put("ua", navigator.userAgent);
+
+/* Each of these is something app.js or the eink theme depends on. A "no"
+   here names the exact incompatibility. */
+var feats = [];
+feats.push("addEventListener:" + (document.addEventListener ? "yes" : "NO"));
+feats.push("XMLHttpRequest:" + (window.XMLHttpRequest ? "yes" : "NO"));
+feats.push("JSON:" + (window.JSON && window.JSON.parse ? "yes" : "NO"));
+feats.push("trim:" + (String.prototype.trim ? "yes" : "no (not used)"));
+feats.push("Math.pow:" + (Math.pow(2, 3) === 8 ? "yes" : "NO"));
+feats.push("getElementsByTagName:" + (document.getElementsByTagName ? "yes" : "NO"));
+feats.push("Image:" + (window.Image ? "yes" : "NO"));
+
+/* -webkit-line-clamp and border-radius: cosmetic, but worth knowing. */
+var probe = document.createElement("div");
+feats.push("borderRadius:" + (typeof probe.style.webkitBorderRadius === "string" ? "yes" : "no"));
+feats.push("lineClamp:" + (typeof probe.style.webkitLineClamp === "string" ? "yes" : "no"));
+feats.push("boxOrient:" + (typeof probe.style.webkitBoxOrient === "string" ? "yes" : "no"));
+put("feat", feats.join(" | "));
+
+/* The real transport, exercised exactly as app.js does it. */
+try {
+  var xhr = new XMLHttpRequest();
+  xhr.onreadystatechange = function () {
+    if (xhr.readyState !== 4) { return; }
+    put("xhr", "status=" + xhr.status + " bytes=" +
+               (xhr.responseText ? xhr.responseText.length : 0));
+    if (xhr.status === 200) {
+      try {
+        var data = window.JSON ? JSON.parse(xhr.responseText) : null;
+        put("json", data ? ("parsed, status=" + data.status + " version=" + data.version) :
+                           "no JSON object on this browser");
+        if (data && data.art && data.art.cover_dither) {
+          var img = new Image();
+          img.onload = function () {
+            put("png", "loaded " + img.width + "x" + img.height + " (" + data.art.cover_dither + ")");
+          };
+          img.onerror = function () { put("png", "FAILED to decode " + data.art.cover_dither); };
+          img.src = data.art.cover_dither;
+        } else {
+          put("png", "no art in payload yet (nothing playing, or art still fetching)");
+        }
+      } catch (parseError) {
+        put("json", "PARSE FAILED: " + parseError);
+      }
+    }
+  };
+  xhr.open("GET", "/api/state?v=0&_=" + (new Date()).getTime(), true);
+  xhr.send(null);
+  put("xhr", "sent, waiting");
+} catch (xhrError) {
+  put("xhr", "THREW: " + xhrError);
+}
+</script>
+
+</body>
+</html>

@@ -1,0 +1,226 @@
+/* Structure only. Every color lives in themes/*.css so a new theme never
+   touches this file — and never touches the backend.
+
+   Constraints this file works around, all real on Android 2.3:
+   - no flexbox (the modern one), so: absolute positioning throughout
+   - no position:fixed that can be trusted, so: everything hangs off #screen,
+     whose height app.js sets from the real viewport
+   - no fullscreen API, so: body is deliberately taller than the viewport and
+     app.js scrolls 1px to retract the URL bar
+   - no filter/backdrop-filter, so: blur is baked into the backdrop JPEG
+   - no SVG, so: no icons, only type and rectangles
+   - no rgba() in gradients, and gradients are slow, so: flat fills */
+
+* { margin: 0; padding: 0; }
+
+/* No fixed width anywhere: the viewport is 320 wide in portrait and 480 in
+   landscape, and everything below is either full-width or positioned by the
+   active theme's orientation rules. */
+html {
+  width: 100%;
+  overflow: hidden;
+}
+
+/* Taller than any viewport this runs in, on purpose: without a page that can
+   scroll, window.scrollTo(0, 1) does nothing and the URL bar never retracts.
+   app.js does the scrolling. */
+body {
+  width: 100%;
+  min-height: 560px;
+  -webkit-text-size-adjust: none;
+  -webkit-tap-highlight-color: rgba(0,0,0,0);
+  -webkit-user-select: none;
+  font-family: "Roboto", "Droid Sans", Helvetica, Arial, sans-serif;
+}
+
+#backdrop {
+  position: absolute;
+  left: -20px; top: -20px;
+  /* Wide enough for the landscape viewport plus the -20px bleed. */
+  width: 520px; height: 600px;
+  background-repeat: no-repeat;
+  background-position: center center;
+  /* The source is a 96px pre-blurred JPEG. Letting the browser scale it up
+     is the cheapest possible "blur" and costs about 3 KB. */
+  background-size: 520px 600px;
+  -webkit-background-size: 520px 600px;
+}
+
+/* Backdrop and scrim cover the whole scrollable body, not just the visible
+   part, so no unpainted band shows if the viewport is taller than 480px. */
+#scrim {
+  position: absolute;
+  left: 0; top: 0;
+  width: 100%; height: 560px;
+}
+
+/* height is a fallback only: app.js overwrites it with window.innerHeight
+   once the URL bar has retracted. Everything below is positioned against it. */
+#screen {
+  position: absolute;
+  left: 0; top: 0;
+  width: 100%;
+  height: 480px;
+}
+
+/* --- cover ------------------------------------------------------------ */
+
+#cover-frame {
+  position: absolute;
+  left: 30px; top: 42px;
+  width: 260px; height: 260px;
+  overflow: hidden;
+}
+
+#cover {
+  display: block;
+  width: 260px;
+  height: 260px;
+  border: 0;
+}
+
+/* --- metadata --------------------------------------------------------- */
+
+#meta {
+  position: absolute;
+  left: 30px; top: 322px;
+  width: 260px;
+}
+
+#title {
+  font-size: 19px;
+  line-height: 24px;
+  font-weight: bold;
+  letter-spacing: -0.2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+#artist {
+  font-size: 13px;
+  line-height: 18px;
+  margin-top: 3px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* --- lyric line ------------------------------------------------------- */
+
+#lyric {
+  position: absolute;
+  left: 30px; top: 370px;
+  width: 260px;
+  height: 34px;
+  font-size: 13px;
+  line-height: 17px;
+  overflow: hidden;
+}
+
+/* --- progress --------------------------------------------------------- */
+
+/* Anchored to the bottom of #screen, whatever height that turns out to be. */
+#progress {
+  position: absolute;
+  left: 30px; bottom: 16px;
+  width: 260px;
+  height: 30px;
+}
+
+#track {
+  position: absolute;
+  left: 0; top: 0;
+  width: 260px;
+  height: 2px;
+  overflow: hidden;
+}
+
+#fill {
+  width: 0;
+  height: 2px;
+}
+
+#elapsed, #duration {
+  position: absolute;
+  top: 10px;
+  font-size: 11px;
+  line-height: 14px;
+}
+
+#elapsed { left: 0; }
+#duration { right: 0; }
+
+/* --- theme-optional elements -------------------------------------------
+   Off by default so a theme that does not want them costs nothing and needs
+   no rules of its own. The theme that wants them turns them on (see
+   themes/eink.css). Adding a theme still never touches the backend. */
+
+#header, #album-name, #waveform, #controls,
+#cover-dither, #cover-dither-dim { display: none; }
+
+/* --- state indicators ------------------------------------------------- */
+
+/* The playback indicator is a word, not an icon. No SVG, and a CSS-drawn
+   triangle at this size renders with visible stair-stepping on the device. */
+#badge {
+  position: absolute;
+  left: 30px; top: 22px;
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+#idle {
+  position: absolute;
+  left: 0; top: 36%;
+  width: 100%;
+  text-align: center;
+  display: none;
+}
+
+#clock {
+  font-size: 64px;
+  line-height: 68px;
+  font-weight: bold;
+  letter-spacing: -2px;
+}
+
+#idle-note {
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-top: 10px;
+}
+
+#offline {
+  position: absolute;
+  right: 30px; top: 22px;
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  display: none;
+}
+
+/* Applied to <body> when the backend reports nothing playing. */
+.is-idle #cover-frame,
+.is-idle #meta,
+.is-idle #lyric,
+.is-idle #progress,
+.is-idle #badge { display: none; }
+
+.is-idle #idle { display: block; }
+
+/* Applied on top of .is-idle when the backend has been unreachable for
+   several polls. Black on every theme on purpose: the last album's backdrop
+   still glowing behind the clock is the "everything is fine" impression this
+   state exists to remove. Class beats the themes' bare `body` selector, and
+   `.is-dead #clock` beats their `#clock`, so no theme needs to know. */
+.is-dead { background: #000000; }
+.is-dead #backdrop,
+.is-dead #scrim { display: none; }
+.is-dead #clock { color: #ffffff; }
+/* "Nothing playing" is the wrong claim here — we do not know what is
+   playing. The clock, and "Reconnecting" in the corner, say it correctly. */
+.is-dead #idle-note { display: none; }
+.is-dead #offline { color: #555555; }
